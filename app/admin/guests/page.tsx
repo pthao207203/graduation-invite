@@ -162,6 +162,16 @@ export default function GuestsPage() {
     setTimeout(() => setMessage(""), 3000);
   };
 
+  const handleCopyLink = async (uniqueCode: string) => {
+    const inviteUrl = `${window.location.origin}/invite/${uniqueCode}`;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      showMessage("✓ Đã copy link mời vào clipboard");
+    } catch (error) {
+      showMessage("❌ Không thể copy link");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-teal-50 via-white to-teal-50">
@@ -404,6 +414,25 @@ export default function GuestsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                       <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleCopyLink(guest.uniqueCode)}
+                          className="text-purple-600 hover:text-purple-800"
+                          title="Copy link mời"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                        </button>
                         <a
                           href={`/invite/${guest.uniqueCode}`}
                           target="_blank"
