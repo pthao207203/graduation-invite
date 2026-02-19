@@ -10,6 +10,7 @@ export interface Guest {
   uniqueCode: string;
   name: string;
   roleId: string;
+  language: "vi" | "ja"; // Ngôn ngữ lời mời: vi (Tiếng Việt) hoặc ja (Tiếng Nhật)
   needParkingMap: boolean;
   inviteLunch: boolean;
   rsvpStatus: "pending" | "accepted" | "declined";
@@ -34,13 +35,14 @@ export interface EventConfig {
   id: string;
   eventDate: number;
   liveMode: boolean;
-  graduationLocation: { location: Location; name: string };
-  photoSpot: { location: Location; name: string };
+  graduationLocation: { location: Location; name: string; name_ja: string };
+  photoSpot: { location: Location; name: string; name_ja: string };
   parkingLocation: { location: Location; name: string };
   lunchLocation: { location: Location; name: string };
   waitingRoom: {
     enabled: boolean;
     name: string;
+    name_ja: string;
     lat: number;
     lng: number;
   };

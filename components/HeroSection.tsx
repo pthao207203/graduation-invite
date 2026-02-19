@@ -1,15 +1,24 @@
 "use client";
 
+import { type Language } from "@/lib/translations";
+
 interface HeroSectionProps {
   eventDate: Date;
+  language?: Language;
 }
 
-export default function HeroSection({ eventDate }: HeroSectionProps) {
-  const formattedDate = eventDate.toLocaleDateString("vi-VN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+export default function HeroSection({
+  eventDate,
+  language = "vi",
+}: HeroSectionProps) {
+  const formattedDate = eventDate.toLocaleDateString(
+    language === "ja" ? "ja-JP" : "vi-VN",
+    {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    },
+  );
 
   return (
     <section className="relative w-full h-screen min-h-150 flex items-center justify-center">

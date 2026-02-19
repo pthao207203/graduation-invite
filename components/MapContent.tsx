@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -65,7 +65,6 @@ export default function MapContent({
   showLunch,
 }: MapSectionProps) {
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
 
   // Create icons on client side only
   const icons =
@@ -124,7 +123,6 @@ export default function MapContent({
         borderRadius: "0.5rem",
         zIndex: 1,
       }}
-      ref={mapRef}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

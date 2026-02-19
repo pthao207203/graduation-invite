@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   getAllGuests,
@@ -25,12 +26,14 @@ export default function GuestsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
+  const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState({
     uniqueCode: "",
     name: "",
     roleId: "",
+    language: "vi" as "vi" | "ja",
     needParkingMap: false,
     inviteLunch: false,
   });
@@ -77,6 +80,9 @@ export default function GuestsPage() {
       });
     }
 
+    // Sort by createdAt (newest first)
+    filtered.sort((a, b) => b.createdAt - a.createdAt);
+
     return filtered;
   }, [guests, searchQuery, filterType, filterCategory]);
 
@@ -87,7 +93,10 @@ export default function GuestsPage() {
 
   const handleAddGuest = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await createGuest(formData);
+    const result = await createGuest({
+      ...formData,
+      language: (formData.language as "vi" | "ja") || "vi",
+    });
 
     if (result.success) {
       showMessage("✓ Đã thêm khách mời thành công");
@@ -106,6 +115,7 @@ export default function GuestsPage() {
     const success = await updateGuest(editingGuest.id, {
       name: formData.name,
       roleId: formData.roleId,
+      language: (formData.language as "vi" | "ja") || "vi",
       needParkingMap: formData.needParkingMap,
       inviteLunch: formData.inviteLunch,
     });
@@ -141,6 +151,7 @@ export default function GuestsPage() {
       uniqueCode: guest.uniqueCode,
       name: guest.name,
       roleId: guest.roleId || "",
+      language: guest.language || "vi",
       needParkingMap: guest.needParkingMap,
       inviteLunch: guest.inviteLunch,
     });
@@ -152,6 +163,7 @@ export default function GuestsPage() {
       uniqueCode: "",
       name: "",
       roleId: "",
+      language: "vi",
       needParkingMap: false,
       inviteLunch: false,
     });
@@ -167,9 +179,14 @@ export default function GuestsPage() {
     try {
       await navigator.clipboard.writeText(inviteUrl);
       showMessage("✓ Đã copy link mời vào clipboard");
-    } catch (error) {
+    } catch {
       showMessage("❌ Không thể copy link");
     }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("adminAuth");
+    router.push("/admin/login");
   };
 
   if (isLoading) {
@@ -188,25 +205,47 @@ export default function GuestsPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 text-teal-700 hover:text-[#01443D] font-medium mb-4"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-4 mb-4">
+            <Link
+              href="/admin"
+              className="inline-flex items-center gap-2 text-teal-700 hover:text-[#01443D] font-medium"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Quay lại trang chính
-          </Link>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Quay lại trang chính
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="ml-auto inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-700 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+              title="Đăng xuất"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              Đăng xuất
+            </button>
+          </div>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-2xl md:text-4xl font-bold text-[#01443D] mb-2">
@@ -605,6 +644,25 @@ export default function GuestsPage() {
                   )}
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-[#01443D] mb-1">
+                    Ngôn ngữ
+                  </label>
+                  <select
+                    value={formData.language}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        language: e.target.value as "vi" | "ja",
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ja">日本語 (Tiếng Nhật)</option>
+                  </select>
+                </div>
+
                 <div className="space-y-2">
                   <label className="flex items-center gap-2">
                     <input
@@ -652,9 +710,9 @@ export default function GuestsPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-teal-700 hover:bg-[#01443D] text-white rounded-lg transition-colors"
+                    className="flex-1 px-4 py-2 bg-teal-700 hover:bg-[#01443D] text-white rounded-lg transition-colors font-medium"
                   >
-                    Thêm
+                    {editingGuest ? "Cập nhật" : "Thêm"}
                   </button>
                 </div>
               </form>
@@ -733,6 +791,25 @@ export default function GuestsPage() {
                       để tạo roles.
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-[#01443D] mb-1">
+                    Ngôn ngữ
+                  </label>
+                  <select
+                    value={formData.language}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        language: e.target.value as "vi" | "ja",
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="ja">日本語 (Tiếng Nhật)</option>
+                  </select>
                 </div>
 
                 <div className="space-y-2">

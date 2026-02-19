@@ -90,6 +90,7 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       uniqueCode: data.uniqueCode,
       name: data.name,
       roleId: data.roleId || "",
+      language: data.language || "vi",
       needParkingMap: data.needParkingMap || false,
       inviteLunch: data.inviteLunch || false,
       rsvpStatus: data.rsvpStatus || "pending",
@@ -134,6 +135,7 @@ export async function getAllGuests(): Promise<Guest[]> {
         uniqueCode: data.uniqueCode,
         name: data.name,
         roleId: data.roleId || "",
+        language: data.language || "vi",
         needParkingMap: data.needParkingMap || false,
         inviteLunch: data.inviteLunch || false,
         rsvpStatus: data.rsvpStatus || "pending",
@@ -151,6 +153,7 @@ export async function createGuest(guestData: {
   uniqueCode: string;
   name: string;
   roleId?: string;
+  language?: "vi" | "ja";
   needParkingMap?: boolean;
   inviteLunch?: boolean;
 }): Promise<{ success: boolean; guestId?: string; error?: string }> {
@@ -174,6 +177,7 @@ export async function createGuest(guestData: {
       uniqueCode: guestData.uniqueCode,
       name: guestData.name,
       roleId: guestData.roleId || "",
+      language: guestData.language || "vi",
       needParkingMap: guestData.needParkingMap || false,
       inviteLunch: guestData.inviteLunch || false,
       rsvpStatus: "pending",
@@ -199,6 +203,7 @@ export async function updateGuest(
   updates: {
     name?: string;
     roleId?: string;
+    language?: "vi" | "ja";
     needParkingMap?: boolean;
     inviteLunch?: boolean;
     rsvpStatus?: "pending" | "accepted" | "declined";
@@ -310,10 +315,12 @@ export async function getEventConfig(): Promise<EventConfig | null> {
       graduationLocation: {
         location: getLocation(data.graduationLocation),
         name: data.graduationLocation?.name || "",
+        name_ja: data.graduationLocation?.name_ja || "",
       },
       photoSpot: {
         location: getLocation(data.photoSpot),
         name: data.photoSpot?.name || "",
+        name_ja: data.photoSpot?.name_ja || "",
       },
       parkingLocation: {
         location: getLocation(data.parkingLocation),
@@ -326,6 +333,7 @@ export async function getEventConfig(): Promise<EventConfig | null> {
       waitingRoom: {
         enabled: data.waitingRoom?.enabled || false,
         name: data.waitingRoom?.name || "Waiting Room",
+        name_ja: data.waitingRoom?.name_ja || "Waiting Room",
         lat: waitingRoomLocation.lat,
         lng: waitingRoomLocation.lng,
       },

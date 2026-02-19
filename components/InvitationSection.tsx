@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getRoleById } from "@/lib/firestore";
+import { getTranslation, type Language } from "@/lib/translations";
 import type { Role } from "@/lib/types";
 
 interface InvitationSectionProps {
@@ -10,6 +11,7 @@ interface InvitationSectionProps {
   eventStatus: "pending" | "accepted" | "declined";
   eventDate: number;
   roleId?: string;
+  language: Language;
 }
 
 export default function InvitationSection({
@@ -18,6 +20,7 @@ export default function InvitationSection({
   eventStatus,
   eventDate,
   roleId,
+  language,
 }: InvitationSectionProps) {
   const [status, setStatus] = useState<"accepted" | "declined" | null>(
     eventStatus === "pending" ? null : (eventStatus as "accepted" | "declined"),
@@ -31,6 +34,9 @@ export default function InvitationSection({
     seconds: 0,
   });
 
+  // Get translations
+  const t = getTranslation(language);
+
   // Helper function to capitalize first letter
   const capitalize = (str: string) => {
     if (!str) return str;
@@ -39,17 +45,27 @@ export default function InvitationSection({
 
   // Format event date
   const date = new Date(eventDate);
-  const dayOfWeek = [
-    "Chủ Nhật",
-    "Thứ Hai",
-    "Thứ Ba",
-    "Thứ Tư",
-    "Thứ Năm",
-    "Thứ Sáu",
-    "Thứ Bảy",
-  ][date.getDay()];
-  const formattedTime = `${date.getHours().toString().padStart(2, "0")}h${date.getMinutes().toString().padStart(2, "0")}`;
-  const formattedDate = `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getFullYear()}`;
+  const dayOfWeek = (
+    language === "ja"
+      ? ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"]
+      : [
+          "Chủ Nhật",
+          "Thứ Hai",
+          "Thứ Ba",
+          "Thứ Tư",
+          "Thứ Năm",
+          "Thứ Sáu",
+          "Thứ Bảy",
+        ]
+  )[date.getDay()];
+  const formattedTime =
+    language === "ja"
+      ? `${date.getHours().toString().padStart(2, "0")}時${date.getMinutes().toString().padStart(2, "0")}分`
+      : `${date.getHours().toString().padStart(2, "0")}h${date.getMinutes().toString().padStart(2, "0")}`;
+  const formattedDate =
+    language === "ja"
+      ? `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, "0")}月${date.getDate().toString().padStart(2, "0")}日`
+      : `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getFullYear()}`;
 
   // Load role data
   useEffect(() => {
@@ -169,34 +185,34 @@ export default function InvitationSection({
           <div className="p-4 md:p-8 bg-white flex">
             <div className="flex-1 flex flex-col justify-center rounded-none shadow-lg p-4 md:p-8 border-4 border-teal-700">
               <h2 className="font-body text-[#01443D] text-sm md:text-base mb-3 md:mb-6">
-                Thân gửi <span className="font-semibold">{guestName}</span>,
+                {t.invitationGreeting}{" "}
+                <span className="font-semibold">{guestName}</span>,
               </h2>
 
               <div className="space-y-2 md:space-y-4 text-[#01443D] font-body text-sm md:text-base leading-relaxed mb-4 md:mb-8">
                 <p>
-                  Sau những năm tháng học tập và cố gắng, cuối cùng {toHost}{" "}
-                  cũng đã đến ngày tốt nghiệp. Đây là một cột mốc quan trọng
-                  trong cuộc đời, và {toHost} rất mong được chia sẻ niềm vui này
-                  cùng {toGuest}.
+                  {t.invitationParagraph1
+                    .replace("{toHost}", toHost)
+                    .replace("{toGuest}", toGuest)}
                 </p>
 
                 <p>
-                  {ToHost} trân trọng kính mời {toGuest} tham dự buổi lễ tốt
-                  nghiệp của {toHost}.
+                  {t.invitationParagraph2
+                    .replace("{ToHost}", ToHost)
+                    .replace("{toGuest}", toGuest)
+                    .replace("{toHost}", toHost)}
                 </p>
 
                 <div className="pt-2 md:pt-4 space-y-1 md:space-y-2 text-sm md:text-base">
                   <p>
-                    Thời gian:{" "}
+                    {t.invitationTime} {language === "ja" ? "" : "ngày "}{" "}
                     <span className="font-semibold">
-                      {formattedTime}, {dayOfWeek}, ngày {formattedDate}
+                      {formattedTime}, {dayOfWeek}, {formattedDate}
                     </span>
                   </p>
                   <p>
-                    Địa điểm:{" "}
-                    <span className="font-semibold">
-                      Trường ĐH Công nghệ Thông tin, ĐHQG-HCM
-                    </span>
+                    {t.invitationLocation}{" "}
+                    <span className="font-semibold">{t.invitationVenue}</span>
                   </p>
                 </div>
               </div>
@@ -216,7 +232,7 @@ export default function InvitationSection({
                     disabled:opacity-50
                   `}
                 >
-                  Tham gia
+                  {t.rsvpAccept}
                 </button>
 
                 <button
@@ -232,7 +248,7 @@ export default function InvitationSection({
                     disabled:opacity-50
                   `}
                 >
-                  Từ chối
+                  {t.rsvpDecline}
                 </button>
               </div>
             </div>
@@ -242,16 +258,19 @@ export default function InvitationSection({
           <div className="p-4 md:p-8 bg-white flex">
             <div className="flex-1 flex flex-col justify-center rounded-none shadow-lg p-3 md:p-8 border-4 border-teal-700">
               <h3 className="font-body text-[#01443D] font-semibold text-center text-sm md:text-base mb-3 md:mb-6">
-                THÁNG 6/2026
+                {language === "ja" ? "2026年6月" : "THÁNG 6/2026"}
               </h3>
 
               {/* Calendar Grid */}
               <div className="mb-2 md:mb-8">
-                <div className="grid grid-cols-7 gap-x-1 gap-y-0 mb-2 border-t border-b border-teal-700 py-2 ">
-                  {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day) => (
+                <div className="grid grid-cols-7 gap-x-1 gap-y-0 mb-2 border-t border-b border-teal-700 py-2 place-items-center">
+                  {(language === "ja"
+                    ? ["日", "月", "火", "水", "木", "金", "土"]
+                    : ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+                  ).map((day) => (
                     <div
                       key={day}
-                      className="w-8 text-center font-body font-semibold text-sm text-teal-800"
+                      className="font-body font-semibold text-sm text-teal-800"
                     >
                       {day}
                     </div>
@@ -286,7 +305,7 @@ export default function InvitationSection({
                     {timeLeft.days}
                   </div>
                   <div className="font-body text-[10px] md:text-sm text-gray-600">
-                    Ngày
+                    {t.countdownDays}
                   </div>
                 </div>
                 <div>
@@ -294,7 +313,7 @@ export default function InvitationSection({
                     {timeLeft.hours}
                   </div>
                   <div className="font-body text-[10px] md:text-sm text-gray-600">
-                    Giờ
+                    {t.countdownHours}
                   </div>
                 </div>
                 <div>
@@ -302,7 +321,7 @@ export default function InvitationSection({
                     {timeLeft.minutes}
                   </div>
                   <div className="font-body text-[10px] md:text-sm text-gray-600">
-                    Phút
+                    {t.countdownMinutes}
                   </div>
                 </div>
                 <div>
@@ -310,7 +329,7 @@ export default function InvitationSection({
                     {timeLeft.seconds}
                   </div>
                   <div className="font-body text-[10px] md:text-sm text-gray-600">
-                    Giây
+                    {t.countdownSeconds}
                   </div>
                 </div>
               </div>

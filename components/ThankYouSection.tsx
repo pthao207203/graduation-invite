@@ -3,13 +3,18 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { getRoleById } from "@/lib/firestore";
+import { getTranslation, type Language } from "@/lib/translations";
 import type { Role } from "@/lib/types";
 
 interface ThankYouSectionProps {
   roleId?: string;
+  language: Language;
 }
 
-export default function ThankYouSection({ roleId }: ThankYouSectionProps) {
+export default function ThankYouSection({
+  roleId,
+  language,
+}: ThankYouSectionProps) {
   const [role, setRole] = useState<Role | null>(null);
 
   useEffect(() => {
@@ -22,7 +27,9 @@ export default function ThankYouSection({ roleId }: ThankYouSectionProps) {
     }
   }, [roleId]);
 
+  const t = getTranslation(language);
   const toGuest = role?.toGuest || "bạn";
+  const toHost = role?.toHost || "mình";
   return (
     <section
       className="w-full py-8 md:py-20 px-4 bg-cover bg-center bg-no-repeat"
@@ -63,13 +70,17 @@ export default function ThankYouSection({ roleId }: ThankYouSectionProps) {
 
         {/* Thank You Text */}
         <h2 className="font-display text-4xl md:text-7xl text-[#01443D] mb-6">
-          Xin cảm ơn
+          {t.thankYouTitle}
         </h2>
 
-        <p className="font-body text-lg text-[#01443D] max-w-xl mx-auto">
-          Cảm ơn {toGuest} đã dành thời gian tham dự và chia sẻ niềm vui trong
-          ngày đặc biệt này!
+        <p className="font-body text-lg text-[#01443D] max-w-2xl mx-auto">
+          {t.thankYouParagraph1
+            .replace("{toGuest}", toGuest)
+            .replace("{toHost}", toHost)}
         </p>
+        {/* <p className="font-body text-lg text-[#01443D] max-w-xl mx-auto mt-4">
+          {t.thankYouParagraph2.replace("{toGuest}", toGuest)}
+        </p> */}
       </div>
     </section>
   );

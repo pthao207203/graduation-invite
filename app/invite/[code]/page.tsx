@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getGuestByCode, getEventConfig } from "@/lib/firestore";
+import { getTranslation } from "@/lib/translations";
 import HeroSection from "@/components/HeroSection";
 import InvitationSection from "@/components/InvitationSection";
 import DirectionsSection from "@/components/DirectionsSection";
@@ -42,28 +43,36 @@ export default async function InvitePage({ params }: PageProps) {
   // Convert timestamp to Date (handle 0 or invalid timestamps)
   const eventDate =
     eventConfig.eventDate > 0 ? new Date(eventConfig.eventDate) : new Date();
-  console.log("Role data:", guest);
+
+  // Get translations based on guest language
+  const language = guest.language || "vi";
+  const t = getTranslation(language);
+
   return (
     <>
       {/* Fixed Header */}
       <header className="relative md:fixed top-0 left-0 right-0 bg-white z-50 border-b border-gray-200 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-3 md:py-3">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-3 md:gap-6">
+          <div
+            className={`flex ${language === "ja" ? "flex-col items-center gap-0" : "flex-col md:flex-row items-center md:items-start gap-3 md:gap-6"}`}
+          >
             {/* Left: Title */}
             <div className="shrink-0">
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl text-[#01443D] whitespace-nowrap">
-                Chúc mừng tốt nghiệp!
+              <h1
+                className={`font-display text-[#01443D] ${language === "ja" ? "text-4xl md:text-5xl pt-4" : "text-5xl md:text-6xl lg:text-7xl"} ${language === "ja" ? "" : "whitespace-nowrap"}`}
+              >
+                {t.headerTitle}
               </h1>
             </div>
 
             {/* Right: Note */}
-            <div className="flex-1 text-center md:text-left">
+            <div
+              className={`${language === "ja" ? "w-full" : "flex-1"} text-center`}
+            >
               <p className="font-body text-sm md:text-base text-[#01443D] leading-relaxed pt-1 md:pt-2.5">
-                Hành trình học vấn đã kết thúc, một chặng đường mới đang bắt
-                đầu.
+                {t.headerSubtitle1}
                 <br />
-                Hãy cùng chia sẻ niềm vui trong ngày đặc biệt này với Phương
-                Thảo nhé!
+                {t.headerSubtitle2}
               </p>
             </div>
           </div>
@@ -73,8 +82,7 @@ export default async function InvitePage({ params }: PageProps) {
       {/* Main Content - 4 Sections */}
       <main className="md:pt-[5rem]">
         {/* Section 1: Hero with Background Image */}
-        <HeroSection eventDate={eventDate} />
-
+        <HeroSection eventDate={eventDate} language={language} />
         {/* Section 2: Invitation + Calendar */}
         <InvitationSection
           guestName={guest.name}
@@ -82,8 +90,8 @@ export default async function InvitePage({ params }: PageProps) {
           eventStatus={guest.rsvpStatus}
           eventDate={eventConfig.eventDate}
           roleId={guest.roleId}
+          language={language}
         />
-
         {/* Lunch RSVP (if invited) */}
         {/* {guest.inviteLunch && (
           <div className="bg-linear-to-br from-orange-50 via-yellow-50 to-amber-50 py-12 px-4">
@@ -104,16 +112,15 @@ export default async function InvitePage({ params }: PageProps) {
             </div>
           </div>
         )} */}
-
         {/* Section 3: Directions with Map */}
         <DirectionsSection
           eventConfig={eventConfig}
           showParking={guest.needParkingMap}
           showLunch={guest.inviteLunch}
+          language={language}
         />
-
         {/* Section 4: Thank You */}
-        <ThankYouSection roleId={guest.roleId} />
+        <ThankYouSection roleId={guest.roleId} language={language} />
       </main>
     </>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -41,6 +42,12 @@ const DEFAULT_ROLES = [
 export default function SetupPage() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("adminAuth");
+    router.push("/admin/login");
+  };
 
   const seedRoles = async () => {
     setIsLoading(true);
@@ -78,13 +85,33 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen bg-linear-to-br from-teal-50 via-white to-teal-50 p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <Link
             href="/admin"
             className="text-teal-700 hover:text-[#01443D] font-medium"
           >
             ← Quay lại Admin
           </Link>
+          <button
+            onClick={handleLogout}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-700 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+            title="Đăng xuất"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            Đăng xuất
+          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">

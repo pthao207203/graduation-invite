@@ -1,12 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { getTranslation, type Language } from "@/lib/translations";
 import type { EventConfig } from "@/lib/types";
 
 interface DirectionsSectionProps {
   eventConfig: EventConfig;
   showParking: boolean;
   showLunch: boolean;
+  language: Language;
 }
 
 interface MapContentProps {
@@ -17,23 +19,29 @@ interface MapContentProps {
 
 const MapContent = dynamic<MapContentProps>(() => import("./MapContent"), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-125 bg-gray-200 rounded-lg flex items-center justify-center">
-      <p className="text-gray-600">Đang Tải Bản Đồ...</p>
-    </div>
-  ),
+  loading: () => {
+    const t = getTranslation("vi");
+    return (
+      <div className="w-full h-125 bg-gray-200 rounded-lg flex items-center justify-center">
+        <p className="text-gray-600">Đang Tải Bản Đồ...</p>
+      </div>
+    );
+  },
 });
 
 export default function DirectionsSection({
   eventConfig,
   showParking,
   showLunch,
+  language,
 }: DirectionsSectionProps) {
+  const t = getTranslation(language);
+
   return (
     <section className="w-full py-8 md:py-20 px-4 sm:px-6 lg:px-8 bg-white relative z-0">
       <div className="max-w-5xl mx-auto">
         <h2 className="font-display text-3xl md:text-6xl text-center text-[#01443D] mb-8 md:mb-12">
-          Hướng dẫn
+          {t.directionsTitle}
         </h2>
 
         {/* Map */}
@@ -54,10 +62,14 @@ export default function DirectionsSection({
             </div>
             <div>
               <h3 className="font-body font-semibold text-[#01443D] mb-1">
-                {eventConfig.graduationLocation.name}
+                {language === "ja"
+                  ? eventConfig.graduationLocation.name_ja
+                  : eventConfig.graduationLocation.name}
               </h3>
               <p className="font-body text-sm text-gray-600">
-                Địa điểm diễn ra buổi lễ tốt nghiệp chính thức
+                {language === "ja"
+                  ? "卒業式が行われる場所"
+                  : "Địa điểm diễn ra buổi lễ tốt nghiệp chính thức"}
               </p>
             </div>
           </div>
@@ -75,7 +87,9 @@ export default function DirectionsSection({
                   {eventConfig.parkingLocation.name}
                 </h3>
                 <p className="font-body text-sm text-gray-600">
-                  Khu vực dành cho khách gửi xe máy
+                  {language === "ja"
+                    ? "バイクの駐車場"
+                    : "Khu vực dành cho khách gửi xe máy"}
                 </p>
               </div>
             </div>
@@ -88,10 +102,14 @@ export default function DirectionsSection({
             </div>
             <div>
               <h3 className="font-body font-semibold text-[#01443D] mb-1">
-                {eventConfig.photoSpot.name}
+                {language === "ja"
+                  ? eventConfig.photoSpot.name_ja
+                  : eventConfig.photoSpot.name}
               </h3>
               <p className="font-body text-sm text-gray-600">
-                Không gian decor để chụp ảnh lưu niệm
+                {language === "ja"
+                  ? "写真撮影用のデコレーション"
+                  : "Không gian decor để chụp ảnh lưu niệm"}
               </p>
             </div>
           </div>
@@ -104,10 +122,14 @@ export default function DirectionsSection({
             </div>
             <div>
               <h3 className="font-body font-semibold text-[#01443D] mb-1">
-                {eventConfig.waitingRoom.name}
+                {language === "ja"
+                  ? eventConfig.waitingRoom.name_ja
+                  : eventConfig.waitingRoom.name}
               </h3>
               <p className="font-body text-sm text-gray-600">
-                Khu vực nghỉ ngơi dành cho khách mời
+                {language === "ja"
+                  ? "ゲスト用の休憩スペース"
+                  : "Khu vực nghỉ ngơi dành cho khách mời"}
               </p>
             </div>
           </div>
