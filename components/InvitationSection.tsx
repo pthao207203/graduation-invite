@@ -47,7 +47,7 @@ export default function InvitationSection({
   const date = new Date(eventDate);
   const dayOfWeek = (
     language === "ja"
-      ? ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"]
+      ? ["日", "月", "火", "水", "木", "金", "土"]
       : [
           "Chủ Nhật",
           "Thứ Hai",
@@ -198,7 +198,7 @@ export default function InvitationSection({
 
                 <p>
                   {t.invitationParagraph2
-                    .replace("{ToHost}", ToHost)
+                    .replace("{ToHost}", toHost)
                     .replace("{toGuest}", toGuest)
                     .replace("{toHost}", toHost)}
                 </p>
@@ -207,7 +207,9 @@ export default function InvitationSection({
                   <p>
                     {t.invitationTime} {language === "ja" ? "" : "ngày "}{" "}
                     <span className="font-semibold">
-                      {formattedTime}, {dayOfWeek}, {formattedDate}
+                      {language === "ja"
+                        ? `${formattedDate} (${dayOfWeek}) ${formattedTime}`
+                        : `${formattedTime}, ${dayOfWeek}, ${formattedDate}`}
                     </span>
                   </p>
                   <p>
