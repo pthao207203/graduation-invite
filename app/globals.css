@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Montserrat", sans-serif;
+  --font-display: "Italianno", cursive;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Montserrat", sans-serif;
+}
+
+/* Leaflet customizations */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Custom font utilities */
+.font-display {
+  font-family: "Italianno", cursive;
+}
+
+.font-body {
+  font-family: "Montserrat", sans-serif;
+}
