@@ -50,9 +50,8 @@ export const translations = {
     // Invitation Section
     invitationGreeting: "親愛なる",
     invitationParagraph1:
-      "長年の学び、努力の末、ついに卒業の日を迎えました。これは人生の中で最も重要な節目です。{toHost}は{toGuest}とこの喜びを分かち合いたいと願っています。",
-    invitationParagraph2:
-      "{ToHost}は{toGuest}を{toHost}の卒業式にお招き申し上げます。",
+      "長年の学びと努力の末、ついに卒業の日を迎えました。これは人生の中で最も重要な節目です。{toHost}は{toGuest}とこの喜びを分かち合いたいと願っています。",
+    invitationParagraph2: "{toGuest}を{toHost}の卒業式にお招き申し上げます。",
     invitationTime: "日時:",
     invitationLocation: "場所:",
     invitationVenue: "ホーチミン市 情報通信大学",

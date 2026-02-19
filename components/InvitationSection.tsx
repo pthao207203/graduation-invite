@@ -64,7 +64,7 @@ export default function InvitationSection({
       : `${date.getHours().toString().padStart(2, "0")}h${date.getMinutes().toString().padStart(2, "0")}`;
   const formattedDate =
     language === "ja"
-      ? `${date.getFullYear()}年${(date.getMonth() + 1).toString().padStart(2, "0")}月${date.getDate().toString().padStart(2, "0")}日`
+      ? `${date.getFullYear()}年${(date.getMonth() + 1).toString()}月${date.getDate().toString()}日`
       : `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1).toString().padStart(2, "0")}/${date.getFullYear()}`;
 
   // Load role data
@@ -208,7 +208,7 @@ export default function InvitationSection({
                     {t.invitationTime} {language === "ja" ? "" : "ngày "}{" "}
                     <span className="font-semibold">
                       {language === "ja"
-                        ? `${formattedDate} (${dayOfWeek}) ${formattedTime}`
+                        ? `${formattedDate}（${dayOfWeek}）${formattedTime}`
                         : `${formattedTime}, ${dayOfWeek}, ${formattedDate}`}
                     </span>
                   </p>
