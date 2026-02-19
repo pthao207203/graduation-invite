@@ -39,6 +39,13 @@ export const translations = {
     graduationVenue: "Địa điểm lễ tốt nghiệp",
     parkingArea: "Bãi đỗ xe",
     lunchVenue: "Nhà hàng ăn trưa",
+
+    // Map
+    mapLoading: "Đang Tải Bản Đồ...",
+    mapDirections: "Chỉ đường đến đây",
+    mapCurrentLocation: "Vị Trí Hiện Tại",
+    mapUpdated: "Cập Nhật:",
+    mapAltitude: "Độ Cao:",
   },
   ja: {
     // Header
@@ -78,6 +85,13 @@ export const translations = {
     graduationVenue: "卒業式会場",
     parkingArea: "駐車場",
     lunchVenue: "昼食会場",
+
+    // Map
+    mapLoading: "地図を読み込み中...",
+    mapDirections: "ルート案内",
+    mapCurrentLocation: "現在位置",
+    mapUpdated: "更新：",
+    mapAltitude: "高度：",
   },
 };
 

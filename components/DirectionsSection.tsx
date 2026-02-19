@@ -15,18 +15,16 @@ interface MapContentProps {
   eventConfig: EventConfig;
   showParking: boolean;
   showLunch: boolean;
+  language: Language;
 }
 
 const MapContent = dynamic<MapContentProps>(() => import("./MapContent"), {
   ssr: false,
-  loading: () => {
-    const t = getTranslation("vi");
-    return (
-      <div className="w-full h-125 bg-gray-200 rounded-lg flex items-center justify-center">
-        <p className="text-gray-600">Đang Tải Bản Đồ...</p>
-      </div>
-    );
-  },
+  loading: () => (
+    <div className="w-full h-125 bg-gray-200 rounded-lg flex items-center justify-center">
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  ),
 });
 
 export default function DirectionsSection({
@@ -50,6 +48,7 @@ export default function DirectionsSection({
             eventConfig={eventConfig}
             showParking={showParking}
             showLunch={showLunch}
+            language={language}
           />
         </div>
 

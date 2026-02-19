@@ -6,6 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { subscribeLiveLocation } from "@/lib/realtime";
 import type { LiveLocation, EventConfig } from "@/lib/types";
+import { getTranslation, type Language } from "@/lib/translations";
 
 // Fix default marker icons in Next.js
 if (typeof window !== "undefined") {
@@ -57,13 +58,16 @@ interface MapSectionProps {
   eventConfig: EventConfig;
   showParking: boolean;
   showLunch: boolean;
+  language: Language;
 }
 
 export default function MapContent({
   eventConfig,
   showParking,
   showLunch,
+  language,
 }: MapSectionProps) {
+  const t = getTranslation(language);
   const [liveLocation, setLiveLocation] = useState<LiveLocation | null>(null);
 
   // Create icons on client side only
@@ -107,10 +111,24 @@ export default function MapContent({
   if (typeof window === "undefined" || !icons) {
     return (
       <div className="w-full h-125 bg-gray-200 flex items-center justify-center">
-        <p className="text-gray-600">Đang Tải Bản Đồ...</p>
+        <p className="text-gray-600">{t.mapLoading}</p>
       </div>
     );
   }
+
+  // Use Japanese tile server for Japanese language
+  const tileConfig =
+    language === "ja"
+      ? {
+          url: "https://{s}.tile.openstreetmap.jp/{z}/{x}/{y}.png",
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://www.openstreetmap.jp/">OpenStreetMap Japan</a>',
+        }
+      : {
+          url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        };
 
   return (
     <MapContainer
@@ -124,10 +142,7 @@ export default function MapContent({
         zIndex: 1,
       }}
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
+      <TileLayer attribution={tileConfig.attribution} url={tileConfig.url} />
 
       {/* Graduation Location */}
       <Marker
@@ -138,7 +153,11 @@ export default function MapContent({
         icon={icons.graduation}
       >
         <Popup>
-          <strong>{eventConfig.graduationLocation.name}</strong>
+          <strong>
+            {language === "ja"
+              ? eventConfig.graduationLocation.name_ja
+              : eventConfig.graduationLocation.name}
+          </strong>
           <br />
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${eventConfig.graduationLocation.location.lat},${eventConfig.graduationLocation.location.lng}`}
@@ -146,7 +165,7 @@ export default function MapContent({
             rel="noopener noreferrer"
             className="text-blue-600 text-sm"
           >
-            Chỉ đường đến đây
+            {t.mapDirections}
           </a>
         </Popup>
       </Marker>
@@ -161,7 +180,7 @@ export default function MapContent({
           icon={icons.parking}
         >
           <Popup>
-            <strong>{eventConfig.parkingLocation.name || "Bãi xe"}</strong>
+            <strong>{eventConfig.parkingLocation.name || t.parkingArea}</strong>
             <br />
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${eventConfig.parkingLocation.location.lat},${eventConfig.parkingLocation.location.lng}`}
@@ -169,7 +188,7 @@ export default function MapContent({
               rel="noopener noreferrer"
               className="text-blue-600 text-sm"
             >
-              Chỉ đường đến đây
+              {t.mapDirections}
             </a>
           </Popup>
         </Marker>
@@ -182,7 +201,11 @@ export default function MapContent({
           icon={icons.waitingRoom}
         >
           <Popup>
-            <strong>{eventConfig.waitingRoom.name}</strong>
+            <strong>
+              {language === "ja"
+                ? eventConfig.waitingRoom.name_ja
+                : eventConfig.waitingRoom.name}
+            </strong>
             <br />
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${eventConfig.waitingRoom.lat},${eventConfig.waitingRoom.lng}`}
@@ -190,7 +213,7 @@ export default function MapContent({
               rel="noopener noreferrer"
               className="text-blue-600 text-sm"
             >
-              Chỉ đường đến đây
+              {t.mapDirections}
             </a>
           </Popup>
         </Marker>
@@ -205,7 +228,11 @@ export default function MapContent({
         icon={icons.photoSpot}
       >
         <Popup>
-          <strong>{eventConfig.photoSpot.name}</strong>
+          <strong>
+            {language === "ja"
+              ? eventConfig.photoSpot.name_ja
+              : eventConfig.photoSpot.name}
+          </strong>
           <br />
           <a
             href={`https://www.google.com/maps/dir/?api=1&destination=${eventConfig.photoSpot.location.lat},${eventConfig.photoSpot.location.lng}`}
@@ -213,7 +240,7 @@ export default function MapContent({
             rel="noopener noreferrer"
             className="text-blue-600 text-sm"
           >
-            Chỉ đường đến đây
+            {t.mapDirections}
           </a>
         </Popup>
       </Marker>
@@ -228,7 +255,7 @@ export default function MapContent({
           icon={icons.lunch}
         >
           <Popup>
-            <strong>{eventConfig.lunchLocation.name || "Phòng nghỉ"}</strong>
+            <strong>{eventConfig.lunchLocation.name || t.lunchVenue}</strong>
             <br />
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${eventConfig.lunchLocation.location.lat},${eventConfig.lunchLocation.location.lng}`}
@@ -236,7 +263,7 @@ export default function MapContent({
               rel="noopener noreferrer"
               className="text-blue-600 text-sm"
             >
-              Chỉ đường đến đây
+              {t.mapDirections}
             </a>
           </Popup>
         </Marker>
@@ -257,13 +284,15 @@ export default function MapContent({
           }}
         >
           <Popup>
-            <strong>Vị Trí Hiện Tại</strong>
+            <strong>{t.mapCurrentLocation}</strong>
             <p className="text-sm mt-1">
-              Cập Nhật:{" "}
-              {new Date(liveLocation.updatedAt).toLocaleTimeString("vi-VN")}
+              {t.mapUpdated}{" "}
+              {new Date(liveLocation.updatedAt).toLocaleTimeString(
+                language === "ja" ? "ja-JP" : "vi-VN",
+              )}
             </p>
             <p className="text-xs text-gray-600">
-              Độ Cao: {liveLocation.altitude}m
+              {t.mapAltitude} {liveLocation.altitude}m
             </p>
             <br />
             <a
@@ -272,7 +301,7 @@ export default function MapContent({
               rel="noopener noreferrer"
               className="text-blue-600 text-sm"
             >
-              Chỉ đường đến đây
+              {t.mapDirections}
             </a>
           </Popup>
         </Marker>
