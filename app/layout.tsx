@@ -13,6 +13,13 @@ export const metadata: Metadata = {
       "Kỷ niệm tốt nghiệp với lời mời tương tác và theo dõi sự kiện thời gian thực",
     type: "website",
   },
+  // icons: {
+  //   icon: [
+  //     { url: "/favi.svg", type: "image/svg+xml" },
+  //     { url: "/favicon.ico", sizes: "any" }, // fallback for older browsers
+  //   ],
+  //   apple: "/apple-touch-icon.png",
+  // },
 };
 
 export default function RootLayout({
