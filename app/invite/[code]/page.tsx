@@ -113,7 +113,7 @@ export default async function InvitePage({ params }: PageProps) {
         />
 
         {/* Section 4: Thank You */}
-        <ThankYouSection />
+        <ThankYouSection roleId={guest.roleId} />
       </main>
     </>
   );

@@ -1,6 +1,28 @@
-import Image from "next/image";
+"use client";
 
-export default function ThankYouSection() {
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { getRoleById } from "@/lib/firestore";
+import type { Role } from "@/lib/types";
+
+interface ThankYouSectionProps {
+  roleId?: string;
+}
+
+export default function ThankYouSection({ roleId }: ThankYouSectionProps) {
+  const [role, setRole] = useState<Role | null>(null);
+
+  useEffect(() => {
+    if (roleId) {
+      getRoleById(roleId).then((loadedRole) => {
+        if (loadedRole) {
+          setRole(loadedRole);
+        }
+      });
+    }
+  }, [roleId]);
+
+  const toGuest = role?.toGuest || "bạn";
   return (
     <section
       className="w-full py-8 md:py-20 px-4 bg-cover bg-center bg-no-repeat"
@@ -45,8 +67,8 @@ export default function ThankYouSection() {
         </h2>
 
         <p className="font-body text-lg text-[#01443D] max-w-xl mx-auto">
-          Cảm ơn bạn đã dành thời gian tham dự và chia sẻ niềm vui trong ngày
-          đặc biệt này!
+          Cảm ơn {toGuest} đã dành thời gian tham dự và chia sẻ niềm vui trong
+          ngày đặc biệt này!
         </p>
       </div>
     </section>
