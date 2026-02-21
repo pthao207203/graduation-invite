@@ -16,6 +16,7 @@ export interface Guest {
   rsvpStatus: "pending" | "accepted" | "declined";
   lunchStatus: "pending" | "accepted" | "declined";
   createdAt: number;
+  lastAccessedAt?: number; // Timestamp lần cuối khách truy cập link
 }
 
 export interface Location {

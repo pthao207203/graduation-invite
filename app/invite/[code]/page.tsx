@@ -85,6 +85,7 @@ export default async function InvitePage({ params }: PageProps) {
         <HeroSection eventDate={eventDate} language={language} />
         {/* Section 2: Invitation + Calendar */}
         <InvitationSection
+          guestId={guest.id}
           guestName={guest.name}
           uniqueCode={guest.uniqueCode}
           eventStatus={guest.rsvpStatus}

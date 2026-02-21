@@ -8,6 +8,7 @@ import {
   deleteDoc,
   Timestamp,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Guest, EventConfig, Role } from "./types";
@@ -95,6 +96,7 @@ export async function getGuestByCode(code: string): Promise<Guest | null> {
       inviteLunch: data.inviteLunch || false,
       rsvpStatus: data.rsvpStatus || "pending",
       lunchStatus: data.lunchStatus || "pending",
+      lastAccessedAt: serializeTimestamp(data.lastAccessedAt),
       createdAt: serializeTimestamp(data.createdAt),
     } as Guest;
   } catch (error) {
@@ -140,6 +142,7 @@ export async function getAllGuests(): Promise<Guest[]> {
         inviteLunch: data.inviteLunch || false,
         rsvpStatus: data.rsvpStatus || "pending",
         lunchStatus: data.lunchStatus || "pending",
+        lastAccessedAt: serializeTimestamp(data.lastAccessedAt),
         createdAt: serializeTimestamp(data.createdAt),
       };
     }) as Guest[];
@@ -227,6 +230,19 @@ export async function deleteGuest(guestId: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error("Error deleting guest:", error);
+    return false;
+  }
+}
+
+export async function updateGuestAccessTime(guestId: string): Promise<boolean> {
+  try {
+    const guestRef = doc(db, "guests", guestId);
+    await updateDoc(guestRef, {
+      lastAccessedAt: serverTimestamp(),
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating guest access time:", error);
     return false;
   }
 }
@@ -357,4 +373,187 @@ export async function updateEventConfig(
     console.error("Error updating event config:", error);
     return false;
   }
+}
+
+export interface Notification {
+  notificationId: string;
+  guestId: string;
+  guestName: string;
+  status: "accepted" | "declined";
+  type: "event" | "lunch";
+  timestamp: number;
+  isRead: boolean;
+}
+
+// Save notification to Firestore
+export async function saveNotification(
+  notification: Omit<Notification, "notificationId">,
+): Promise<string | null> {
+  try {
+    const notificationsRef = collection(db, "notifications");
+
+    const docRef = await addDoc(notificationsRef, {
+      ...notification,
+      createdAt: serverTimestamp(),
+    });
+
+    return docRef.id;
+  } catch (error) {
+    console.error("Error saving notification:", error);
+    return null;
+  }
+}
+
+// Mark notification as read
+export async function markNotificationAsRead(
+  notificationId: string,
+): Promise<boolean> {
+  try {
+    const notifRef = doc(db, "notifications", notificationId);
+    await updateDoc(notifRef, {
+      isRead: true,
+    });
+    return true;
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    return false;
+  }
+}
+
+// Mark all notifications as read
+export async function markAllNotificationsAsRead(): Promise<boolean> {
+  try {
+    const notificationsRef = collection(db, "notifications");
+    const snapshot = await getDocs(notificationsRef);
+
+    for (const docSnapshot of snapshot.docs) {
+      if (!docSnapshot.data().isRead) {
+        await updateDoc(docSnapshot.ref, { isRead: true });
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error marking all notifications as read:", error);
+    return false;
+  }
+}
+
+// Get all notifications
+export async function getAllNotifications(): Promise<Notification[]> {
+  try {
+    const notificationsRef = collection(db, "notifications");
+    const snapshot = await getDocs(notificationsRef);
+
+    return snapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          notificationId: doc.id,
+          guestId: data.guestId,
+          guestName: data.guestName,
+          status: data.status,
+          type: data.type,
+          timestamp: serializeTimestamp(data.createdAt),
+          isRead: data.isRead || false,
+        };
+      })
+      .sort((a, b) => b.timestamp - a.timestamp) as Notification[];
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return [];
+  }
+}
+
+// Subscribe to notification changes
+export function subscribeToNotifications(
+  callback: (notifications: Notification[]) => void,
+): () => void {
+  const notificationsRef = collection(db, "notifications");
+
+  const unsubscribe = onSnapshot(
+    notificationsRef,
+    (snapshot) => {
+      const notifications = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            notificationId: doc.id,
+            guestId: data.guestId,
+            guestName: data.guestName,
+            status: data.status,
+            type: data.type,
+            timestamp: serializeTimestamp(data.createdAt),
+            isRead: data.isRead || false,
+          };
+        })
+        .sort((a, b) => b.timestamp - a.timestamp) as Notification[];
+
+      callback(notifications);
+    },
+    (error) => {
+      console.error("Error subscribing to notifications:", error);
+    },
+  );
+
+  return unsubscribe;
+}
+
+export function subscribeToGuestChanges(
+  callback: (notifications: Notification[]) => void,
+): () => void {
+  const guestsRef = collection(db, "guests");
+
+  const unsubscribe = onSnapshot(
+    guestsRef,
+    async (snapshot) => {
+      for (const change of snapshot.docChanges()) {
+        if (change.type === "modified") {
+          const data = change.doc.data();
+          const docId = change.doc.id;
+
+          // Check if RSVP status changed
+          if (
+            data.rsvpStatus === "accepted" ||
+            data.rsvpStatus === "declined"
+          ) {
+            const notification: Omit<Notification, "notificationId"> = {
+              guestId: docId,
+              guestName: data.name || "Guest",
+              status: data.rsvpStatus,
+              type: "event",
+              timestamp: Date.now(),
+              isRead: false,
+            };
+
+            // Save to Firestore
+            await saveNotification(notification);
+          }
+
+          // Check if lunch status changed
+          if (
+            data.lunchStatus === "accepted" ||
+            data.lunchStatus === "declined"
+          ) {
+            const notification: Omit<Notification, "notificationId"> = {
+              guestId: docId,
+              guestName: data.name || "Guest",
+              status: data.lunchStatus,
+              type: "lunch",
+              timestamp: Date.now(),
+              isRead: false,
+            };
+
+            // Save to Firestore
+            await saveNotification(notification);
+          }
+        }
+      }
+    },
+    (error) => {
+      console.error("Error subscribing to guest changes:", error);
+    },
+  );
+
+  return unsubscribe;
 }

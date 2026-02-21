@@ -19,6 +19,7 @@ export default function GuestsPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
@@ -37,6 +38,10 @@ export default function GuestsPage() {
     needParkingMap: false,
     inviteLunch: false,
   });
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -188,6 +193,10 @@ export default function GuestsPage() {
     sessionStorage.removeItem("adminAuth");
     router.push("/admin/login");
   };
+
+  if (!isClient) {
+    return null;
+  }
 
   if (isLoading) {
     return (
@@ -372,6 +381,12 @@ export default function GuestsPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-[#01443D] uppercase tracking-wider">
                     Bãi Xe
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#01443D] uppercase tracking-wider">
+                    Trạng Thái Truy Cập
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[#01443D] uppercase tracking-wider">
+                    Lần Truy Cập Cuối
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-[#01443D] uppercase tracking-wider">
                     Hành Động
                   </th>
@@ -449,6 +464,39 @@ export default function GuestsPage() {
                         <span className="text-green-600 font-medium">✓ Có</span>
                       ) : (
                         <span className="text-gray-400">✗ Không</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {guest.lastAccessedAt ? (
+                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                          ✓ Đã xem
+                        </span>
+                      ) : (
+                        <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                          ✗ Chưa xem
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[#01443D]">
+                      {guest.lastAccessedAt ? (
+                        <div className="text-xs">
+                          <div className="font-medium">
+                            {new Date(guest.lastAccessedAt).toLocaleTimeString(
+                              "vi-VN",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </div>
+                          <div className="text-gray-500">
+                            {new Date(guest.lastAccessedAt).toLocaleDateString(
+                              "vi-VN",
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">

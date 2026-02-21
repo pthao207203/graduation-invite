@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getRoleById } from "@/lib/firestore";
+import { useState, useEffect, useRef } from "react";
+import { getRoleById, updateGuestAccessTime } from "@/lib/firestore";
 import { getTranslation, type Language } from "@/lib/translations";
 import type { Role } from "@/lib/types";
 
 interface InvitationSectionProps {
+  guestId: string;
   guestName: string;
   uniqueCode: string;
   eventStatus: "pending" | "accepted" | "declined";
@@ -15,6 +16,7 @@ interface InvitationSectionProps {
 }
 
 export default function InvitationSection({
+  guestId,
   guestName,
   uniqueCode,
   eventStatus,
@@ -26,6 +28,10 @@ export default function InvitationSection({
     eventStatus === "pending" ? null : (eventStatus as "accepted" | "declined"),
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [feedback, setFeedback] = useState<"accepted" | "declined" | null>(
+    null,
+  );
+  // const feedbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
@@ -78,6 +84,14 @@ export default function InvitationSection({
     loadRole();
   }, [roleId]);
 
+  // Track guest access time
+  useEffect(() => {
+    const trackAccess = async () => {
+      await updateGuestAccessTime(guestId);
+    };
+    trackAccess();
+  }, [guestId]);
+
   // Pronouns with defaults
   const toGuest = role?.toGuest || "bạn"; // How to address guest
   const toHost = role?.toHost || "mình"; // How guest refers to host
@@ -106,6 +120,14 @@ export default function InvitationSection({
     return () => clearInterval(timer);
   }, [eventDate]);
 
+  // useEffect(() => {
+  //   return () => {
+  //     if (feedbackTimerRef.current) {
+  //       clearTimeout(feedbackTimerRef.current);
+  //     }
+  //   };
+  // }, []);
+
   const handleRSVP = async (newStatus: "accepted" | "declined") => {
     setIsLoading(true);
 
@@ -123,6 +145,13 @@ export default function InvitationSection({
       const data = await response.json();
       if (data.success) {
         setStatus(newStatus);
+        setFeedback(newStatus);
+        // if (feedbackTimerRef.current) {
+        //   clearTimeout(feedbackTimerRef.current);
+        // }
+        // feedbackTimerRef.current = setTimeout(() => {
+        //   setFeedback(null);
+        // }, 4000);
       }
     } catch (error) {
       console.error("RSVP error:", error);
@@ -220,6 +249,71 @@ export default function InvitationSection({
               </div>
 
               {/* RSVP Buttons */}
+              {feedback && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-teal-900/20 backdrop-blur-sm p-4"
+                  role="presentation"
+                >
+                  <div className="w-full max-w-2xl bg-white shadow-xl p-4 md:p-8 text-center">
+                    <div
+                      className="w-full border-4 border-teal-700 px-3 py-4 md:px-6 md:py-8 text-center"
+                      role="status"
+                      aria-live="polite"
+                    >
+                      <div className="mx-auto mb-2 md:mb-4 flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-full border-3 md:border-4 border-teal-700 text-teal-700">
+                        {feedback === "accepted" ? (
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-6 w-6 md:h-8 md:w-8"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M5 12.5l4.5 4.5L19 7.5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            viewBox="0 0 24 24"
+                            className="h-6 w-6 md:h-8 md:w-8"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M6 6l12 12M18 6L6 18"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                      <h3 className="font-body text-lg md:text-2xl text-teal-800 mb-1 md:mb-2">
+                        {feedback === "accepted"
+                          ? t.rsvpAcceptedTitle
+                          : t.rsvpDeclinedTitle}
+                      </h3>
+                      <p className="font-body text-xs md:text-base text-[#01443D] mb-3 md:mb-6">
+                        {feedback === "accepted"
+                          ? t.rsvpAcceptedMessage
+                          : t.rsvpDeclinedMessage}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setFeedback(null)}
+                        className="px-8 py-2 font-body text-sm md:text-base bg-gray-200 text-gray-600 rounded-sm hover:bg-gray-300 transition-colors"
+                      >
+                        {t.rsvpClose}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex gap-2 md:gap-4">
                 <button
                   onClick={() => handleRSVP("accepted")}
@@ -253,6 +347,11 @@ export default function InvitationSection({
                   {t.rsvpDecline}
                 </button>
               </div>
+              {status === "declined" && (
+                <p className="mt-2 text-xs md:text-sm font-body text-gray-600">
+                  {t.rsvpChangeMindNote}
+                </p>
+              )}
             </div>
           </div>
 

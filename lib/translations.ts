@@ -20,6 +20,13 @@ export const translations = {
     // RSVP
     rsvpAccept: "Tham gia",
     rsvpDecline: "Từ chối",
+    rsvpAcceptedTitle: "Thành công!",
+    rsvpDeclinedTitle: "Thành công!",
+    rsvpAcceptedMessage: "Bạn đã xác nhận sẽ tham dự lễ tốt nghiệp.",
+    rsvpDeclinedMessage: "Bạn đã từ chối sẽ tham dự lễ tốt nghiệp.",
+    rsvpClose: "Đóng",
+    rsvpChangeMindNote:
+      "Nếu bạn đổi ý, có thể nhấn “Tham gia” để xác nhận lại nhé.",
 
     // Countdown
     countdownDays: "Ngày",
@@ -46,6 +53,14 @@ export const translations = {
     mapCurrentLocation: "Vị Trí Hiện Tại",
     mapUpdated: "Cập Nhật:",
     mapAltitude: "Độ Cao:",
+
+    // Notifications
+    notificationAccepted: " đã xác nhận tham dự",
+    notificationDeclined: " đã từ chối tham dự",
+    notificationLunchAccepted: " đã xác nhận ăn trưa",
+    notificationLunchDeclined: " đã từ chối ăn trưa",
+    notificationRecentActivity: "Hoạt Động Gần Đây",
+    notificationNoActivity: "Chưa có xác nhận nào",
   },
   ja: {
     // Header
@@ -66,6 +81,13 @@ export const translations = {
     // RSVP
     rsvpAccept: "出席",
     rsvpDecline: "欠席",
+    rsvpAcceptedTitle: "完了しました！",
+    rsvpDeclinedTitle: "受け付けました！",
+    rsvpAcceptedMessage: "卒業式への出席を受け付けました。",
+    rsvpDeclinedMessage: "卒業式への欠席を受け付けました。",
+    rsvpClose: "閉じる",
+    rsvpChangeMindNote:
+      "もしご都合が変わりましたら、「出席」を押して再度ご返信いただけます。",
 
     // Countdown
     countdownDays: "日間",
@@ -92,6 +114,14 @@ export const translations = {
     mapCurrentLocation: "現在位置",
     mapUpdated: "更新：",
     mapAltitude: "高度：",
+
+    // Notifications
+    notificationAccepted: "{name}が出席を確認しました",
+    notificationDeclined: "{name}が欠席を確認しました",
+    notificationLunchAccepted: "{name}が昼食参加を確認しました",
+    notificationLunchDeclined: "{name}が昼食欠席を確認しました",
+    notificationRecentActivity: "最近のアクティビティ",
+    notificationNoActivity: "確認がありません",
   },
 };
 

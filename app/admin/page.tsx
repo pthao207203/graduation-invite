@@ -7,7 +7,14 @@ import {
   getAllGuests,
   getEventConfig,
   updateEventConfig,
+  subscribeToGuestChanges,
+  subscribeToNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  getAllNotifications,
+  type Notification,
 } from "@/lib/firestore";
+import { getTranslation } from "@/lib/translations";
 import type { Guest, EventConfig } from "@/lib/types";
 
 export default function AdminPage() {
@@ -15,6 +22,7 @@ export default function AdminPage() {
   const [eventConfig, setEventConfig] = useState<EventConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,22 +30,38 @@ export default function AdminPage() {
 
     const loadData = async () => {
       setIsLoading(true);
-      const [guestsData, configData] = await Promise.all([
+      const [guestsData, configData, notificationsData] = await Promise.all([
         getAllGuests(),
         getEventConfig(),
+        getAllNotifications(),
       ]);
 
       if (isMounted) {
         setGuests(guestsData);
         setEventConfig(configData);
+        setNotifications(notificationsData);
         setIsLoading(false);
       }
     };
 
     loadData();
 
+    // Subscribe to real-time notification changes
+    const unsubscribe = subscribeToNotifications((newNotifications) => {
+      if (isMounted) {
+        setNotifications(newNotifications);
+      }
+    });
+
+    // Initialize guest change listener (to save new notifications)
+    const unsubscribeGuests = subscribeToGuestChanges(() => {
+      // This will auto-save notifications to Firestore
+    });
+
     return () => {
       isMounted = false;
+      unsubscribe();
+      unsubscribeGuests();
     };
   }, []);
 
@@ -470,6 +494,179 @@ export default function AdminPage() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Recent Activity / Notifications */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#01443D]">
+              {getTranslation("vi").notificationRecentActivity}
+            </h2>
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center justify-center w-6 h-6 bg-teal-100 text-teal-700 rounded-full text-sm font-semibold">
+                {notifications.filter((n) => !n.isRead).length}
+              </div>
+              {notifications.some((n) => !n.isRead) && (
+                <button
+                  onClick={async () => {
+                    await markAllNotificationsAsRead();
+                    showMessage("✓ Đã đánh dấu tất cả là đã đọc");
+                  }}
+                  className="px-3 py-1.5 bg-teal-100 text-teal-700 text-xs font-medium rounded-lg hover:bg-teal-200 transition-colors"
+                  title="Đánh dấu tất cả là đã đọc"
+                >
+                  Mark all as read
+                </button>
+              )}
+            </div>
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="text-center py-12">
+              <svg
+                className="w-16 h-16 text-gray-300 mx-auto mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <p className="text-gray-500 text-lg font-medium">
+                {getTranslation("vi").notificationNoActivity}
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                Xác nhận từ khách sẽ xuất hiện tại đây
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
+              {notifications.map((notif) => (
+                <div
+                  key={`${notif.notificationId}-${notif.timestamp}`}
+                  className={`flex items-start gap-4 p-4 rounded-lg border transition-all ${
+                    notif.isRead
+                      ? "border-gray-100 bg-gradient-to-r from-gray-50 to-transparent"
+                      : "border-teal-200 bg-gradient-to-r from-teal-100 to-transparent shadow-sm"
+                  } hover:shadow-md`}
+                >
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      notif.status === "accepted"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {notif.status === "accepted" ? (
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2.5}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p
+                        className={`text-sm font-medium text-[#01443D] ${
+                          !notif.isRead ? "font-bold" : ""
+                        }`}
+                      >
+                        {notif.type === "event"
+                          ? notif.status === "accepted"
+                            ? `✓ ${notif.guestName} ${getTranslation("vi").notificationAccepted}`
+                            : `✗ ${notif.guestName} ${getTranslation("vi").notificationDeclined}`
+                          : notif.status === "accepted"
+                            ? `✓ ${notif.guestName} ${getTranslation("vi").notificationLunchAccepted}`
+                            : `✗ ${notif.guestName} ${getTranslation("vi").notificationLunchDeclined}`}
+                      </p>
+                      {!notif.isRead && (
+                        <div className="w-2 h-2 rounded-full bg-teal-600"></div>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#01443D] opacity-60">
+                      {new Date(notif.timestamp).toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      if (!notif.isRead) {
+                        await markNotificationAsRead(notif.notificationId);
+                      }
+                    }}
+                    className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      notif.isRead
+                        ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        : "bg-teal-100 text-teal-700 hover:bg-teal-200"
+                    }`}
+                    title={notif.isRead ? "Đã đọc" : "Đánh dấu là đã đọc"}
+                  >
+                    {notif.isRead ? (
+                      <span className="flex items-center gap-1">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </svg>
+                        Đã đọc
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803c1.753-2.964 4.953-4.972 8.5-4.972s6.747 2.008 8.5 4.972a9.97 9.97 0 011.563 4.803c-1.275 4.057-5.065 7-9.543 7M5 12a7 7 0 1114 0 7 7 0 01-14 0z"
+                          />
+                        </svg>
+                        Chưa đọc
+                      </span>
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Help Section */}
