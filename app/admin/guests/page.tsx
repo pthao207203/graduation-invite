@@ -19,7 +19,6 @@ export default function GuestsPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<FilterType>("all");
@@ -38,10 +37,6 @@ export default function GuestsPage() {
     needParkingMap: false,
     inviteLunch: false,
   });
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -193,10 +188,6 @@ export default function GuestsPage() {
     sessionStorage.removeItem("adminAuth");
     router.push("/admin/login");
   };
-
-  if (!isClient) {
-    return null;
-  }
 
   if (isLoading) {
     return (
