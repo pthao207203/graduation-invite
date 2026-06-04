@@ -61,6 +61,11 @@ export const translations = {
     notificationLunchDeclined: " đã từ chối ăn trưa",
     notificationRecentActivity: "Hoạt Động Gần Đây",
     notificationNoActivity: "Chưa có xác nhận nào",
+
+    // Footer
+    footerContact: "Thông tin liên hệ",
+    footerPhone: "Điện thoại",
+    footerFacebook: "Facebook",
   },
   ja: {
     // Header
@@ -122,6 +127,11 @@ export const translations = {
     notificationLunchDeclined: "{name}が昼食欠席を確認しました",
     notificationRecentActivity: "最近のアクティビティ",
     notificationNoActivity: "確認がありません",
+
+    // Footer
+    footerContact: "お問い合わせ",
+    footerPhone: "電話",
+    footerFacebook: "Facebook",
   },
 };
 

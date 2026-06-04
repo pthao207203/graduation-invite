@@ -5,6 +5,7 @@ import HeroSection from "@/components/HeroSection";
 import InvitationSection from "@/components/InvitationSection";
 import DirectionsSection from "@/components/DirectionsSection";
 import ThankYouSection from "@/components/ThankYouSection";
+import Footer from "@/components/Footer";
 
 interface PageProps {
   params: Promise<{
@@ -123,6 +124,9 @@ export default async function InvitePage({ params }: PageProps) {
         {/* Section 4: Thank You */}
         <ThankYouSection roleId={guest.roleId} language={language} />
       </main>
+
+      {/* Footer with contact info */}
+      <Footer language={language} />
     </>
   );
 }
