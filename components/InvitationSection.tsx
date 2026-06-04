@@ -55,14 +55,14 @@ export default function InvitationSection({
     language === "ja"
       ? ["日", "月", "火", "水", "木", "金", "土"]
       : [
-          "Chủ Nhật",
-          "Thứ Hai",
-          "Thứ Ba",
-          "Thứ Tư",
-          "Thứ Năm",
-          "Thứ Sáu",
-          "Thứ Bảy",
-        ]
+        "Chủ Nhật",
+        "Thứ Hai",
+        "Thứ Ba",
+        "Thứ Tư",
+        "Thứ Năm",
+        "Thứ Sáu",
+        "Thứ Bảy",
+      ]
   )[date.getDay()];
   const formattedTime =
     language === "ja"
@@ -96,6 +96,16 @@ export default function InvitationSection({
   const toGuest = role?.toGuest || "bạn"; // How to address guest
   const toHost = role?.toHost || "mình"; // How guest refers to host
   const ToHost = capitalize(toHost); // Capitalized version for start of sentence
+
+  // Replace all host/guest tokens in a template string. Handles multiple
+  // occurrences and the capitalized {ToHost}/{ToGuest} variants used at the
+  // start of a sentence.
+  const fillTokens = (text: string) =>
+    text
+      .replaceAll("{ToHost}", ToHost)
+      .replaceAll("{toHost}", toHost)
+      .replaceAll("{ToGuest}", capitalize(toGuest))
+      .replaceAll("{toGuest}", toGuest);
 
   // Countdown timer
   useEffect(() => {
@@ -219,25 +229,16 @@ export default function InvitationSection({
               </h2>
 
               <div className="space-y-2 md:space-y-4 text-[#01443D] font-body text-sm md:text-base leading-relaxed mb-4 md:mb-8">
-                <p>
-                  {t.invitationParagraph1
-                    .replace("{toHost}", toHost)
-                    .replace("{toGuest}", toGuest)}
-                </p>
+                <p>{fillTokens(t.invitationParagraph1)}</p>
 
-                <p>
-                  {t.invitationParagraph2
-                    .replace("{ToHost}", toHost)
-                    .replace("{toGuest}", toGuest)
-                    .replace("{toHost}", toHost)}
-                </p>
+                <p>{fillTokens(t.invitationParagraph2)}</p>
 
                 <div className="pt-2 md:pt-4 space-y-1 md:space-y-2 text-sm md:text-base">
                   <p>
                     {t.invitationTime} {language === "ja" ? "" : "ngày "}{" "}
                     <span className="font-semibold">
                       {language === "ja"
-                        ? `${formattedDate}（${dayOfWeek}）${formattedTime}`
+                        ? `${formattedDate}(${dayOfWeek})${formattedTime}`
                         : `${formattedTime}, ${dayOfWeek}, ${formattedDate}`}
                     </span>
                   </p>
@@ -320,10 +321,9 @@ export default function InvitationSection({
                   disabled={isLoading || status === "accepted"}
                   className={`
                     flex-1 py-2 md:py-3 text-sm md:text-base font-body font-semibold transition-all
-                    ${
-                      status === "accepted"
-                        ? "bg-teal-700 text-white"
-                        : "bg-teal-700 text-white hover:bg-teal-800"
+                    ${status === "accepted"
+                      ? "bg-teal-700 text-white"
+                      : "bg-teal-700 text-white hover:bg-teal-800"
                     }
                     disabled:opacity-50
                   `}
@@ -336,10 +336,9 @@ export default function InvitationSection({
                   disabled={isLoading || status === "declined"}
                   className={`
                     flex-1 py-2 md:py-3 text-sm md:text-base font-body font-semibold transition-all
-                    ${
-                      status === "declined"
-                        ? "bg-gray-400 text-white"
-                        : "bg-gray-300 text-[#01443D] hover:bg-gray-400 hover:text-white"
+                    ${status === "declined"
+                      ? "bg-gray-400 text-white"
+                      : "bg-gray-300 text-[#01443D] hover:bg-gray-400 hover:text-white"
                     }
                     disabled:opacity-50
                   `}
@@ -384,13 +383,12 @@ export default function InvitationSection({
                       key={index}
                       className={`
                       h-8 w-8 mx-auto flex items-center justify-center text-sm font-body
-                      ${
-                        item.highlight
+                      ${item.highlight
                           ? "bg-teal-700 text-white rounded-full font-bold"
                           : item.day
                             ? "text-[#01443D]"
                             : ""
-                      }
+                        }
                     `}
                     >
                       {item.day}
